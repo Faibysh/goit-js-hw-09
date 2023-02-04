@@ -15,6 +15,7 @@ const secondsEl = elements('[data-seconds]');
 let timeDifference = 0;
 let timerId = null;
 let formatDate = null;
+let selectedDates = null;
 
 const options = {
   enableTime: true,
@@ -22,9 +23,9 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
 
-  onClose(selectedDates) {
-    console.log(selectedDates[0]);
-    currentDifferenceDate(selectedDates[0]);
+  onClose(selectedTime) {
+    selectedDates = selectedTime[0]
+    currentDifferenceDate(selectedDates);
   },
 };
 
@@ -58,9 +59,7 @@ function currentDifferenceDate(selectedDates) {
     startBtn.setAttribute('disabled', true);
     return Notify.failure('Please choose a date in the future');
   }
-  timeDifference = selectedDates.getTime() - currentDate;
-  formatDate = convertMs(timeDifference);
-  renderDate(formatDate);
+
   startBtn.removeAttribute('disabled');
 }
 
@@ -79,12 +78,14 @@ function convertMs(ms) {
 }
 
 function startTimer() {
-  timeDifference -= 1000;
-  if (secondsEl.textContent <= 0 && minutesEl.textContent <= 0) {
+  timeDifference = selectedDates.getTime() - Date.now();
+
+  if (timeDifference <= 0) {
     Notify.success('Time end');
     clearInterval(timerId);
   } else {
     formatDate = convertMs(timeDifference);
+    addLeadingZero(formatDate)
     renderDate(formatDate);
   }
 }
@@ -96,4 +97,10 @@ function renderDate(formatDate) {
   daysEl.textContent = formatDate.days;
 }
 
-// Пришвидшена дата, css, 
+function addLeadingZero(formatDate) {
+  formatDate.days = String(formatDate.days).length === 1 ? String(formatDate.days).padStart(2, '0') : formatDate.days
+  formatDate.minutes = String(formatDate.minutes).length === 1 ? String(formatDate.minutes).padStart(2, '0') : formatDate.minutes
+  formatDate.hours = String(formatDate.hours).length === 1 ? String(formatDate.hours).padStart(2, '0') : formatDate.hours
+  formatDate.seconds = String(formatDate.seconds).length === 1 ? String(formatDate.seconds).padStart(2, '0') : formatDate.seconds
+  return formatDate
+}
